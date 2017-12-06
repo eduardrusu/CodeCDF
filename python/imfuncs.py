@@ -26,7 +26,7 @@ Functions:
                        positions of the catalog objects.
 """
 
-import pyfits as pf
+from astropy.io import fits as pf
 import numpy as n
 from scipy import ndimage
 import matplotlib.pyplot as plt

@@ -1,5 +1,6 @@
 import numpy as n
-import scipy,pyfits,math
+import scipy,math
+from astropy.io import fits as pyfits
 from scipy import arccos,arcsin,arctan,arctan2,sin,cos,tan,pi,linalg
 
 raddeg = 180./pi
