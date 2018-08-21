@@ -1249,9 +1249,14 @@ def combine_spectra(txt_files,outfile):
 
    """ Create the weighted sum """
    print ""
+   i = 0
    for f in file_list:
       print "Reading data from file %s" % f 
       tmpdat = np.loadtxt(f)
+      # Here I make sure the overall counts are the same in each spectra
+      if i == 0: tmpdat1 = tmpdat
+      else:
+          tmpdat = tmpdat1 - np.median(tmpdat[500:2500] - tmpdat1[500:2500])
       wt = 1.0 / (tmpdat[:,2])
       wtflux += wt * tmpdat[:,1]
       wtsum += wt
@@ -1283,7 +1288,8 @@ def plot_sky(infile):
    """
 
    data = pyfits.getdata(infile)
-   sky = np.median(data,axis=0)
+   #sky = np.median(data,axis=0)
+   sky = np.median(data,axis=1)
    pix = np.arange(sky.size)
    plot_spectrum_array(pix,sky,xlabel='Pixels',title='Sky Spectrum')
 
@@ -3064,9 +3070,13 @@ def extractblendedtraces_spectrum(filenamei,filenamew,mupoly,sigpoly,mupoly1,sig
 
    # Read the data
    datai = pyfits.open(filenamei)[0].data # this should be the _bgsub file
-   dataw = pyfits.open(filenamew)[0].data # this should be the _var file
    datai[np.isnan(datai)]=0
-   dataw[np.isnan(dataw)]=0
+   if filenamew != None:
+        dataw = pyfits.open(filenamew)[0].data # this should be the _var file
+        dataw[np.isnan(dataw)]=0
+   else:
+        print "Computing variance from data."
+        dataw = abs(datai)
                        
    # Set the wavelength axis
    pix = np.arange(datai.shape[specaxis])
@@ -3074,9 +3084,11 @@ def extractblendedtraces_spectrum(filenamei,filenamew,mupoly,sigpoly,mupoly1,sig
    # Read the calibrated wavelength
    hdulist = pyfits.open(filenamei)
    print datai.shape
-   wavelength = np.arange(datai.shape[1])
+   #wavelength = np.arange(datai.shape[1])
+   wavelength = np.arange(datai.shape[0])
    hdr1 = hdulist[0].header
-   wavelength = hdr1['crval1'] + wavelength*hdr1['cd1_1']
+   #wavelength = hdr1['crval1'] + wavelength*hdr1['cd1_1']
+   wavelength = hdr1['crval2'] + wavelength*hdr1['cd2_2']
    del hdulist
 
    # Set the fixed mu and sigma for the Gaussian fit at each point in the
